@@ -16,7 +16,7 @@ myApp.controllers = {
     // Set button functionality to push 'new_task.html' page.
     Array.prototype.forEach.call(page.querySelectorAll('[component="button/new-task"]'), function(element) {
       element.onclick = function() {
-        document.querySelector('#myNavigator').pushPage('html/new_task.html');
+        return document.querySelector('#myNavigator').pushPage('html/new_task.html');
       };
 
       element.show && element.show(); // Fix ons-fab in Safari.
@@ -59,11 +59,11 @@ myApp.controllers = {
           // Set selected category to 'All', refresh and pop page.
           document.querySelector('#default-category-list ons-list-item ons-input').checked = true;
           document.querySelector('#default-category-list ons-list-item').updateCategoryView();
-          document.querySelector('#myNavigator').popPage();
+          return document.querySelector('#myNavigator').popPage();
 
         } else {
           // Show alert if the input title is empty.
-          ons.notification.alert('You must provide a task title.');
+          return ons.notification.alert('You must provide a task title.');
         }
       };
     });
