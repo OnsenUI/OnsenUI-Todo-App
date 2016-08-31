@@ -1,6 +1,5 @@
-# OnsenUI-Todo-App
-Onsen UI 2.0 example To-Do app implemented in Vanilla JavaScript.
+# Showcase Todo App
 
-Try it here: http://frankdiox.github.io/OnsenUI-Todo-App
+Demo: http://onsenui.github.io/showcase-todo
 
-Tutorial: https://onsen.io/blog/auto-style-app-onsen/
+Original app: https://github.com/frankdiox/OnsenUI-Todo-App

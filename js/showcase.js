@@ -1,27 +1,52 @@
 
-  var style = document.createElement('style');
-  style.innerHTML = `
-    .text-input--material.focused {
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#009688), to(#009688)), -webkit-gradient(linear, left bottom, left top, color-stop(1px, transparent), color-stop(1px, #afafaf));
-    background-image: -webkit-linear-gradient(#009688, #009688), -webkit-linear-gradient(bottom, transparent 1px, #afafaf 1px);
-    background-image: -moz-linear-gradient(#009688, #009688), -moz-linear-gradient(bottom, transparent 1px, #afafaf 1px);
-    background-image: -o-linear-gradient(#009688, #009688), -o-linear-gradient(bottom, transparent 1px, #afafaf 1px);
-    background-image: linear-gradient(#009688, #009688), linear-gradient(to top, transparent 1px, #afafaf 1px);
-    -webkit-animation: material-text-input-animate 0.3s forwards;
-    -moz-animation: material-text-input-animate 0.3s forwards;
-    -o-animation: material-text-input-animate 0.3s forwards;
-    animation: material-text-input-animate 0.3s forwards;
-  }`;
+var style = document.createElement('style');
+style.innerHTML = `
+  .text-input--material.focused {
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#009688), to(#009688)), -webkit-gradient(linear, left bottom, left top, color-stop(1px, transparent), color-stop(1px, #afafaf));
+  background-image: -webkit-linear-gradient(#009688, #009688), -webkit-linear-gradient(bottom, transparent 1px, #afafaf 1px);
+  background-image: -moz-linear-gradient(#009688, #009688), -moz-linear-gradient(bottom, transparent 1px, #afafaf 1px);
+  background-image: -o-linear-gradient(#009688, #009688), -o-linear-gradient(bottom, transparent 1px, #afafaf 1px);
+  background-image: linear-gradient(#009688, #009688), linear-gradient(to top, transparent 1px, #afafaf 1px);
+  -webkit-animation: material-text-input-animate 0.3s forwards;
+  -moz-animation: material-text-input-animate 0.3s forwards;
+  -o-animation: material-text-input-animate 0.3s forwards;
+  animation: material-text-input-animate 0.3s forwards;
+}`;
 
-  ons.ready(function() {
-    document.body.appendChild(style);
-    setTimeout(myApp.services.showcase.bind(), 1000);
+ons.ready(function() {
+  document.body.appendChild(style);
+
+  var lock = function() {
+    myApp.userInteraction = true;
+    Array.prototype.forEach.call(document.querySelectorAll('.text-input--material.focused'), function(el) {
+      el.classList.remove('focused');
+    });
+  };
+
+  var unlock = function() {
+    myApp.userInteraction = false;
+    myApp.delay(2000).then(function() {
+      if (!myApp.looping) {
+        myApp.showcase();
+      }
+    }).catch(function(){});
+  };
+
+  document.addEventListener('mouseenter', lock);
+  document.addEventListener('mouseleave', unlock);
+  document.addEventListener('visibilitychange', function (event) {
+    if (document.visibilityState === 'hidden') {
+      lock();
+    } else if (myApp.userInteraction) {
+      unlock();
+    }
   });
 
+  myApp.delay(1000).then(myApp.showcase).catch(function(){});
+});
 
-myApp.services.showcase = function () {
-  var lastItemCreated;
 
+myApp.showcase = function () {
   var simRipple = (function() {
     var active = false;
     return function(el) {
@@ -47,7 +72,7 @@ myApp.services.showcase = function () {
   };
 
   var simClick = function(el) {
-    var toggle;
+    var toggle, wait = 200;
 
     if (el.tagName.match(/BUTTON$/)) {
       toggle = function() {
@@ -63,11 +88,14 @@ myApp.services.showcase = function () {
         };
       } else if (listItem.hasAttribute('ripple')) {
         toggle = simRipple.bind(null, listItem);
+      } else {
+        toggle = function() {};
+        wait = 0;
       }
     }
 
     toggle();
-    return myApp.delay(300)
+    return myApp.delay(wait)
     .then(function() {
       toggle();
       return el.onclick ? el.onclick() : el.click();
@@ -79,13 +107,13 @@ myApp.services.showcase = function () {
   };
 
   var rand = function() {
-    return 200 + (Math.random() * 300 - 150);
+    return 50 + (Math.random() * 50 - 25);
   };
 
   var iterate = function () {
     var menu = document.querySelector('ons-splitter-side');
 
-    return simClick(document.querySelector('[component="button/new-task"]'))
+    return simClick(document.querySelector('ons-if:not([style]) [component="button/new-task"'))
       .then(function (page) {
         var inputTitle = document.querySelector('#title-input');
         var inputCategory = document.querySelector('#category-input');
@@ -101,7 +129,7 @@ myApp.services.showcase = function () {
           .then(
               myApp.actionBlock.bind(null, [
                 myApp.generateStepsFromString(inputTitle, 'our repo!')
-              ], 0, rand)
+              ], 1, rand)
           )
           .then(
               myApp.actionBlock.bind(null, [
@@ -117,12 +145,19 @@ myApp.services.showcase = function () {
             myApp.actionBlock.bind(null, [
               myApp.generateStepsFromString(inputCategory, 'uper important')
             ], 1, rand)
+          )
+          .then(
+              myApp.actionBlock.bind(null, [
+                [toggleMaterialLine.bind(null, inputCategory), function() { inputCategory._helper.style.color = 'rgba(0, 0, 0, 0.5)'; }]
+              ], 400, 1)
           );
         })
-          
+         .then(function() {
+          return simClick(document.querySelector('#newTaskPage #inner-urgent-input'));
+        })         
         .then(myApp.delay.bind(null, 800))
         .then(function() {
-          return simClick(document.querySelector('#newTaskPage [component="button/save-task"]'));
+          return simClick(document.querySelector('#newTaskPage ons-if:not([style]) [component="button/save-task"]'));
         })
         .then(myApp.delay.bind(null, 1200))
         .then(function() {
@@ -136,9 +171,7 @@ myApp.services.showcase = function () {
         .then(menu.close.bind(menu))
         .then(myApp.delay.bind(null, 1200))
         .then(function() {
-          var el = document.querySelector('#pending-list ons-list-item:last-child .center');
-          lastItemCreated = ons._util.findParent(el, 'ons-list-item');
-          return simClick(el);
+          return simClick(document.querySelector('#pending-list #sc-item .center'));
         })
         .then(myApp.delay.bind(null, 1600))
         .then(function() {
@@ -168,15 +201,15 @@ myApp.services.showcase = function () {
       promises.push(myNavigator.popPage());
     }
 
-    if (lastItemCreated) {
-      lastItemCreated.remove();
-      lastItemCreated = null;
-    }
-
-    return Promise.all(promises);
+    return Promise.all(promises).then(function() {
+      if (document.getElementById('sc-item')) {
+        document.querySelector('#sc-item .right').onclick();
+      }
+    });
   };
 
   var loop = function() {
+    myApp.looping = true;
     return reset()
       .then(myApp.delay.bind(null, 1800))
       .then(iterate)
@@ -185,7 +218,9 @@ myApp.services.showcase = function () {
     ;
   };
 
-  loop();
+  return loop().catch(function() {
+    myApp.looping = false;
+  });
 };
 
 
@@ -194,19 +229,9 @@ myApp.services.showcase = function () {
 ////////////////
 
 (function(){
-  var blockCounter = 0;
-
   var action = function(fn, delay) {
-    return new Promise(function(resolve) {
-      setTimeout(function() {
-      //setInterval(function() {
-        if (!myApp.hover && document.visibilityState === 'visible') {
-          fn();
-          resolve();
-        }
-      //}, count * delay);
-      }, typeof delay === 'function' ? delay() : delay);
-    });
+    return myApp.delay(typeof delay === 'function' ? delay() : delay)
+      .then(fn);
   };
 
   myApp.actionBlock = function(actions, initialDelay, actionDelay) {
@@ -216,14 +241,13 @@ myApp.services.showcase = function () {
       });
     }
 
-    return new Promise(function(resolve) {
-      setTimeout(function() {
+    return myApp.delay(initialDelay || 0)
+      .then(function() {
         var promisedActions = actions.reduce(function(soFar, fn) {
           return soFar.then(action.bind(null, fn, actionDelay || 2000));
         }, Promise.resolve());
-        promisedActions.then(resolve);
-      }, initialDelay || 0);
-    });
+        return promisedActions;
+      });
   };
 
   myApp.modifyValue = function(element, char) {
@@ -241,8 +265,14 @@ myApp.services.showcase = function () {
 
 
   myApp.delay = function(value) {
-    return new Promise(function(resolve) {
-      setTimeout(resolve, value)
+    return new Promise(function(resolve, reject) {
+      setTimeout(function() {
+        if (myApp.userInteraction) {
+          reject();
+        } else {
+          resolve();
+        }
+      }, value)
     });
   };
 })();

@@ -29,6 +29,9 @@ myApp.services = {
 
       // Takes the actual task item.
       var taskItem = template.firstChild;
+      if (data.id) {
+        taskItem.id = data.id;
+      }
       // Store data within the element.
       taskItem.data = data;
 
