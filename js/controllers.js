@@ -42,9 +42,6 @@ myApp.controllers = {
     // Set button functionality to save a new task.
     Array.prototype.forEach.call(page.querySelectorAll('[component="button/save-task"]'), function(element) {
       element.onclick = function(event) {
-        if (!event) {
-          console.log('jioooo');
-        }
         var newTitle = page.querySelector('#title-input').value;
 
         if (newTitle) {
