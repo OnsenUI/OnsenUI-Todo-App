@@ -14,15 +14,15 @@ style.innerHTML = [
 ].join('');
 
 var pointer = ons._util.create('div', {
-  display: 'none',
   zIndex: 9999999,
   position: 'absolute',
   width: '20px',
   height: '20px',
   backgroundColor: '#000',
-  opacity: 0.5,
+  opacity: 0,
   borderRadius: '100%',
-  border: '2px solid #FFF'
+  border: '2px solid #FFF',
+  transition: 'opacity .08s ease-in-out'
 });
 
 ons.ready(function() {
@@ -71,8 +71,8 @@ myApp.showcase = function () {
         el.querySelector('ons-ripple')._onTap({
           gesture: {
             srcEvent: {
-              clientX: rect.left + (rect.width/2),
-              clientY: rect.top + (rect.height/2)
+              clientX: rect.left + 2/3 * rect.width - 10,
+              clientY: rect.top + 2/3 * rect.height - 10
             }
           }
         });
@@ -109,13 +109,13 @@ myApp.showcase = function () {
     var rect = el.getBoundingClientRect();
     pointer.style.left = rect.left + 2/3 * rect.width - 10 + 'px';
     pointer.style.top = rect.top +  2/3 * rect.height - 10 + 'px';
-    pointer.style.display = 'block';
+    pointer.style.opacity = '0.5';
 
     toggle();
-    return myApp.delay(200)
+    return myApp.delay(250)
     .then(function() {
       toggle();
-      pointer.style.display = 'none';
+      pointer.style.opacity = '0';
       return el.onclick ? el.onclick() : el.click();
     });
   };
