@@ -1,20 +1,33 @@
 
 var style = document.createElement('style');
-style.innerHTML = `
-  .text-input--material.focused {
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#009688), to(#009688)), -webkit-gradient(linear, left bottom, left top, color-stop(1px, transparent), color-stop(1px, #afafaf));
-  background-image: -webkit-linear-gradient(#009688, #009688), -webkit-linear-gradient(bottom, transparent 1px, #afafaf 1px);
-  background-image: -moz-linear-gradient(#009688, #009688), -moz-linear-gradient(bottom, transparent 1px, #afafaf 1px);
-  background-image: -o-linear-gradient(#009688, #009688), -o-linear-gradient(bottom, transparent 1px, #afafaf 1px);
-  background-image: linear-gradient(#009688, #009688), linear-gradient(to top, transparent 1px, #afafaf 1px);
-  -webkit-animation: material-text-input-animate 0.3s forwards;
-  -moz-animation: material-text-input-animate 0.3s forwards;
-  -o-animation: material-text-input-animate 0.3s forwards;
-  animation: material-text-input-animate 0.3s forwards;
-}`;
+style.innerHTML = [
+  '.text-input--material.focused {',
+  'background-image: -webkit-gradient(linear, left top, left bottom, from(#009688), to(#009688)), -webkit-gradient(linear, left bottom, left top, color-stop(1px, transparent), color-stop(1px, #afafaf));',
+  'background-image: -webkit-linear-gradient(#009688, #009688), -webkit-linear-gradient(bottom, transparent 1px, #afafaf 1px);',
+  'background-image: -moz-linear-gradient(#009688, #009688), -moz-linear-gradient(bottom, transparent 1px, #afafaf 1px);',
+  'background-image: -o-linear-gradient(#009688, #009688), -o-linear-gradient(bottom, transparent 1px, #afafaf 1px);',
+  'background-image: linear-gradient(#009688, #009688), linear-gradient(to top, transparent 1px, #afafaf 1px);',
+  '-webkit-animation: material-text-input-animate 0.3s forwards;',
+  '-moz-animation: material-text-input-animate 0.3s forwards;',
+  '-o-animation: material-text-input-animate 0.3s forwards;',
+  'animation: material-text-input-animate 0.3s forwards;'
+].join('');
+
+var pointer = ons._util.create('div', {
+  display: 'none',
+  zIndex: 9999999,
+  position: 'absolute',
+  width: '20px',
+  height: '20px',
+  backgroundColor: '#000',
+  opacity: 0.5,
+  borderRadius: '100%',
+  border: '2px solid #FFF'
+});
 
 ons.ready(function() {
   document.body.appendChild(style);
+  document.body.appendChild(pointer);
 
   var lock = function() {
     myApp.userInteraction = true;
@@ -72,7 +85,7 @@ myApp.showcase = function () {
   };
 
   var simClick = function(el) {
-    var toggle, wait = 200;
+    var toggle;
 
     if (el.tagName.match(/BUTTON$/)) {
       toggle = function() {
@@ -90,14 +103,19 @@ myApp.showcase = function () {
         toggle = simRipple.bind(null, listItem);
       } else {
         toggle = function() {};
-        wait = 0;
       }
     }
 
+    var rect = el.getBoundingClientRect();
+    pointer.style.left = rect.left + 2/3 * rect.width - 10 + 'px';
+    pointer.style.top = rect.top +  2/3 * rect.height - 10 + 'px';
+    pointer.style.display = 'block';
+
     toggle();
-    return myApp.delay(wait)
+    return myApp.delay(200)
     .then(function() {
       toggle();
+      pointer.style.display = 'none';
       return el.onclick ? el.onclick() : el.click();
     });
   };
@@ -120,6 +138,9 @@ myApp.showcase = function () {
 
         // input.focus() does not apply material styles properly. Half of these lines are a workaround for that.
         return myApp.delay(600)
+          .then(function() {
+            return simClick(inputTitle);
+          })
           .then(toggleMaterialLine.bind(null, inputTitle))
           .then(myApp.delay.bind(null, 600))
           .then(function() {
@@ -136,6 +157,9 @@ myApp.showcase = function () {
                 [toggleMaterialLine.bind(null, inputTitle), function() { inputTitle._helper.style.color = 'rgba(0, 0, 0, 0.5)'; }, toggleMaterialLine.bind(null, inputCategory)]
               ], 200, 1)
           )
+          .then(function() {
+            return simClick(inputCategory);
+          })
           .then(
               myApp.actionBlock.bind(null, [
                 [myApp.modifyValue.bind(null, inputCategory, 'S'), function() { inputCategory._helper.style.color = ''; }]
@@ -163,7 +187,7 @@ myApp.showcase = function () {
         .then(function() {
           return simClick(document.querySelector('[component="button/menu"]'));
         })
-        .then(myApp.delay.bind(null, 800))
+        .then(myApp.delay.bind(null, 1200))
         .then(function() {
           return simClick(document.querySelector('ons-splitter-side [input-id="radio-super important"]')._input);
         })
@@ -176,6 +200,10 @@ myApp.showcase = function () {
         .then(myApp.delay.bind(null, 1600))
         .then(function() {
           return simClick(document.querySelector('#detailsTaskPage [component="button/save-task"]'));
+        })
+        .then(myApp.delay.bind(null, 1200))
+        .then(function() {
+          return simClick(document.querySelector('ons-alert-dialog .alert-dialog-button--primal'));
         })
       ;
 
@@ -203,7 +231,7 @@ myApp.showcase = function () {
 
     return Promise.all(promises).then(function() {
       if (document.getElementById('sc-item')) {
-        document.querySelector('#sc-item .right').onclick();
+        return simClick(document.querySelector('#sc-item .right'));
       }
     });
   };
