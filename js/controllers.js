@@ -41,7 +41,10 @@ myApp.controllers = {
   newTaskPage: function(page) {
     // Set button functionality to save a new task.
     Array.prototype.forEach.call(page.querySelectorAll('[component="button/save-task"]'), function(element) {
-      element.onclick = function() {
+      element.onclick = function(event) {
+        if (!event) {
+          console.log('jioooo');
+        }
         var newTitle = page.querySelector('#title-input').value;
 
         if (newTitle) {
@@ -52,7 +55,8 @@ myApp.controllers = {
               category: page.querySelector('#category-input').value,
               description: page.querySelector('#description-input').value,
               highlight: page.querySelector('#highlight-input').checked,
-              urgent: page.querySelector('#urgent-input').checked
+              urgent: page.querySelector('#urgent-input').checked,
+              id: event === undefined ? 'sc-item' : undefined
             }
           );
 
